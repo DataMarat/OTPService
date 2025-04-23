@@ -1,7 +1,7 @@
-package com.example.otp_service.service;
+package com.example.otpservice.service;
 
-import com.example.otp_service.dao.UserRepository;
-import com.example.otp_service.model.User;
+import com.example.otpservice.dao.UserRepository;
+import com.example.otpservice.model.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 

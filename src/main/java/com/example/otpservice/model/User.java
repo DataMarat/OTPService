@@ -1,4 +1,4 @@
-package com.example.otp_service.model;
+package com.example.otpservice.model;
 
 public class User {
     private Long id;

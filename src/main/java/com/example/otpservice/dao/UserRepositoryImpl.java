@@ -1,6 +1,6 @@
-package com.example.otp_service.dao;
+package com.example.otpservice.dao;
 
-import com.example.otp_service.model.User;
+import com.example.otpservice.model.User;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;

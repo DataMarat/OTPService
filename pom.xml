@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>otp-service</artifactId>
+	<artifactId>otpservice</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>otp-service</name>
+	<name>otpservice</name>
 	<description>OTP Service</description>
 	<url/>
 	<licenses>

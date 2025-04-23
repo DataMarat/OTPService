@@ -1,7 +1,7 @@
-package com.example.otp_service;
+package com.example.otpservice;
 
-import com.example.otp_service.dao.UserRepository;
-import com.example.otp_service.service.UserService;
+import com.example.otpservice.dao.UserRepository;
+import com.example.otpservice.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
