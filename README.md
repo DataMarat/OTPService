@@ -31,18 +31,28 @@
     - проверок уникальности имени и почты
     - ограничения на единственного администратора
     - хеширования пароля с помощью BCrypt
+- Реализован REST-эндпоинт POST /register:
+  - Создание пользователя с ролями USER/ADMIN
+  - Проверка уникальности username/email
+  - Ограничение: может быть только один администратор
+  - Валидация входящих данных через @Valid и DTO
+  - Возврат структурированных JSON-ответов с кодами 201, 400, 409
 
 ## Структура проекта
 src/
 ├── main/
-│   ├── java/com/example/otpservice/          // Главный класс
-│   └── java/com/example/otpservice/           // Основная логика
-│       ├── model/
-│       ├── dao/
-│       └── service/
+│   ├── java/com/example/otpservice/
+│   │   ├── controller/                      # REST-контроллеры (AuthController)
+│   │   ├── dto/                             # DTO с аннотациями валидации (RegistrationRequest)
+│   │   ├── exception/                       # Глобальные обработчики ошибок (GlobalExceptionHandler)
+│   │   ├── model/                           # Модели данных (User)
+│   │   ├── dao/                             # Репозитории (UserRepository)
+│   │   ├── service/                         # Бизнес-логика (UserService)
+│   │   └── config/                          # Конфигурация Spring Security (SecurityConfig)
 │   └── resources/
-│       ├── application.properties             // Игнорируется в Git
-│       └── application.example.properties     // Шаблон настроек
+│       ├── application.properties
+│       └── schema.sql
+
 
 ## Настройка окружения
 

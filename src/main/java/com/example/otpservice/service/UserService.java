@@ -2,11 +2,17 @@ package com.example.otpservice.service;
 
 import com.example.otpservice.dao.UserRepository;
 import com.example.otpservice.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service responsible for user registration and validation logic.
+ */
 @Service
 public class UserService {
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -16,20 +22,32 @@ public class UserService {
         this.passwordEncoder = new BCryptPasswordEncoder(); // можно позже внедрить как бин
     }
 
+    /**
+     * Registers a new user, ensuring uniqueness of username/email and admin constraints.
+     *
+     * @param username    the desired username
+     * @param email       the email address
+     * @param rawPassword plain text password
+     * @param isAdmin     true if the user should be an admin
+     */
     public void registerUser(String username, String email, String rawPassword, boolean isAdmin) {
         if (userRepository.findByUsername(username).isPresent()) {
+            logger.warn("Registration failed: username '{}' already exists", username);
             throw new IllegalArgumentException("Username already exists");
         }
 
         if (userRepository.findByEmail(email).isPresent()) {
+            logger.warn("Registration failed: email '{}' already exists", email);
             throw new IllegalArgumentException("Email already exists");
         }
 
         if (isAdmin && userRepository.adminExists()) {
+            logger.warn("Registration failed: attempted to create a second admin");
             throw new IllegalStateException("Admin already exists");
         }
 
         String passwordHash = passwordEncoder.encode(rawPassword);
+        logger.debug("Password successfully hashed for username '{}'", username);
 
         User user = new User();
         user.setUsername(username);
@@ -38,5 +56,6 @@ public class UserService {
         user.setRole(isAdmin ? User.Role.ADMIN : User.Role.USER);
 
         userRepository.save(user);
+        logger.info("User '{}' registered successfully with role '{}'", username, user.getRole());
     }
 }

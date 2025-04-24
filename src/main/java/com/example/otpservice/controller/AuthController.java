@@ -4,6 +4,8 @@ import com.example.otpservice.dto.RegistrationRequest;
 import com.example.otpservice.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,7 @@ import java.util.Map;
 @RestController
 @RequestMapping
 public class AuthController {
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final UserService userService;
 
@@ -37,6 +40,9 @@ public class AuthController {
             @RequestBody @Valid RegistrationRequest request,
             HttpServletRequest httpRequest
     ) {
+        logger.info("[POST /register] Registration attempt: username='{}', email='{}', admin={}",
+                request.getUsername(), request.getEmail(), request.getAdmin());
+
         try {
             userService.registerUser(
                     request.getUsername(),
@@ -44,12 +50,16 @@ public class AuthController {
                     request.getPassword(),
                     request.getAdmin()
             );
+            logger.info("User '{}' registered successfully", request.getUsername());
             return ResponseEntity.status(HttpStatus.CREATED).build();
 
         } catch (IllegalArgumentException | IllegalStateException e) {
             HttpStatus status = (e instanceof IllegalArgumentException)
                     ? HttpStatus.BAD_REQUEST
                     : HttpStatus.CONFLICT;
+
+            logger.warn("Registration failed for '{}': {} ({})",
+                    request.getUsername(), e.getMessage(), status);
 
             Map<String, Object> body = new HashMap<>();
             body.put("timestamp", ZonedDateTime.now());
