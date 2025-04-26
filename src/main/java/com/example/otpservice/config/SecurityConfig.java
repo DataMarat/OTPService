@@ -4,6 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import com.example.otpservice.security.JwtFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Security configuration. Allows public access to /register endpoint.
@@ -23,13 +25,14 @@ public class SecurityConfig {
      * @throws Exception on error
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) // Disables CSRF protection explicitly
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/register").permitAll() // Open endpoint
+                        .requestMatchers("/register", "/login").permitAll() // Allow open access
                         .anyRequest().authenticated()             // Require auth for others
-                );
+                )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // JWT before standard auth
 
         return http.build();
     }

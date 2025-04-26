@@ -42,16 +42,33 @@
 src/
 ├── main/
 │   ├── java/com/example/otpservice/
+│   │   ├── config/                          # Конфигурация Spring Security
+│   │   │   └── SecurityConfig.java
 │   │   ├── controller/                      # REST-контроллеры (AuthController)
-│   │   ├── dto/                             # DTO с аннотациями валидации (RegistrationRequest)
-│   │   ├── exception/                       # Глобальные обработчики ошибок (GlobalExceptionHandler)
-│   │   ├── model/                           # Модели данных (User)
-│   │   ├── dao/                             # Репозитории (UserRepository)
-│   │   ├── service/                         # Бизнес-логика (UserService)
-│   │   └── config/                          # Конфигурация Spring Security (SecurityConfig)
+│   │   │   └── AuthController.java
+│   │   ├── dao/                             # Репозитории (DAO слой)
+│   │   │   ├── UserRepository.java
+│   │   │   └── UserRepositoryImpl.java
+│   │   ├── dto/                             # DTO с аннотациями валидации
+│   │   │   ├── JwtResponse.java             # DTO для ответа с токеном
+│   │   │   ├── LoginRequest.java             # DTO для логина
+│   │   │   └── RegistrationRequest.java
+│   │   ├── exception/                       # Глобальные обработчики ошибок
+│   │   │   └── GlobalExceptionHandler.java
+│   │   ├── model/                           # Модели данных
+│   │   │   └── User.java
+│   │   ├── security/                        # Работа с безопасностью и токенами
+│   │   │   ├── JwtFilter.java               # Фильтрация запросов по JWT
+│   │   │   └── JwtUtil.java                 # Генерация токенов
+│   │   └── service/                         # Бизнес-логика
+│   │   │   └── UserService.java
+│   │   └── OtpServiceApplication.java       # Точка входа
 │   └── resources/
-│       ├── application.properties
-│       └── schema.sql
+│       ├── application.properties           # Настройки (включая jwt.secret, jwt.expiration)
+│       └── schema.sql                        # Скрипт создания таблиц
+├── test/
+│   ├── java/com/example/otpservice/
+│   │   └── OtpServiceApplicationTests.java   # Тест запуска приложения
 
 
 ## Настройка окружения

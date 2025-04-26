@@ -58,4 +58,30 @@ public class UserService {
         userRepository.save(user);
         logger.info("User '{}' registered successfully with role '{}'", username, user.getRole());
     }
+
+    /**
+     * Authenticates a user using email and password.
+     *
+     * @param email user email
+     * @param rawPassword raw password input
+     * @return User object if authentication is successful
+     * @throws IllegalArgumentException if email is not found or password is invalid
+     */
+    public User authenticateUser(String email, String rawPassword) {
+        logger.info("Authenticating user with email '{}'", email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    logger.warn("Authentication failed: email '{}' not found", email);
+                    return new IllegalArgumentException("Invalid email or password");
+                });
+
+        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+            logger.warn("Authentication failed: incorrect password for email '{}'", email);
+            throw new IllegalArgumentException("Invalid email or password");
+        }
+
+        logger.info("User '{}' authenticated successfully", user.getUsername());
+        return user;
+    }
 }
