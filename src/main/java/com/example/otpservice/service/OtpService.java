@@ -5,7 +5,8 @@ import com.example.otpservice.model.OtpCode;
 import com.example.otpservice.model.OtpStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
  */
 @Service
 public class OtpService {
-
+    private static final Logger logger = LoggerFactory.getLogger(OtpService.class);
     private final OtpCodeRepository otpCodeRepository;
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -35,7 +36,9 @@ public class OtpService {
      * @param operationId the operation ID
      */
     public void generateOtp(Long userId, String operationId) {
+        logger.info("Generating OTP code for userId={} and operationId={}", userId, operationId);
         if (otpCodeRepository.existsByUserIdAndOperationId(userId, operationId)) {
+            logger.warn("OTP code already exists for userId={} and operationId={}", userId, operationId);
             throw new IllegalStateException("OTP code already exists for this operation and user.");
         }
 
@@ -52,6 +55,7 @@ public class OtpService {
         otpCode.setExpiresAt(expiry);
 
         otpCodeRepository.save(otpCode);
+        logger.info("OTP code generated and saved successfully for userId={} and operationId={}", userId, operationId);
     }
 
     /**
@@ -63,9 +67,11 @@ public class OtpService {
      * @return true if the OTP is valid, false otherwise
      */
     public boolean validateOtp(Long userId, String operationId, String code) {
+        logger.info("Validating OTP code for userId={} and operationId={}", userId, operationId);
         var otpOpt = otpCodeRepository.findActiveCode(userId, operationId, code);
 
         if (otpOpt.isEmpty()) {
+            logger.warn("No active OTP code found for userId={} and operationId={}", userId, operationId);
             return false;
         }
 
@@ -74,10 +80,12 @@ public class OtpService {
 
         if (now.isAfter(otp.getExpiresAt())) {
             otpCodeRepository.updateStatus(otp.getId(), OtpStatus.EXPIRED);
+            logger.info("OTP code expired for userId={} and operationId={}", userId, operationId);
             return false;
         }
 
         otpCodeRepository.updateStatus(otp.getId(), OtpStatus.USED);
+        logger.info("OTP code successfully validated and marked as USED for userId={} and operationId={}", userId, operationId);
         return true;
     }
 

@@ -5,6 +5,7 @@ import com.example.otpservice.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 /**
@@ -83,5 +84,17 @@ public class UserService {
 
         logger.info("User '{}' authenticated successfully", user.getUsername());
         return user;
+    }
+
+    /**
+     * Finds a user ID by email.
+     *
+     * @param email the user's email
+     * @return the user ID
+     */
+    public Long getUserIdByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email))
+                .getId();
     }
 }
