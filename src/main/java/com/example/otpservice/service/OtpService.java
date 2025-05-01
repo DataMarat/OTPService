@@ -1,12 +1,15 @@
 package com.example.otpservice.service;
 
 import com.example.otpservice.dao.OtpCodeRepository;
+import com.example.otpservice.exception.OtpCodeAlreadyExistsException;
+import com.example.otpservice.model.DeliveryChannel;
 import com.example.otpservice.model.OtpCode;
 import com.example.otpservice.model.OtpStatus;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
@@ -17,6 +20,8 @@ import java.time.LocalDateTime;
 public class OtpService {
     private static final Logger logger = LoggerFactory.getLogger(OtpService.class);
     private final OtpCodeRepository otpCodeRepository;
+    private final OtpDeliveryFactory otpDeliveryFactory;
+    private final UserService userService;
     private final SecureRandom secureRandom = new SecureRandom();
 
     @Value("${otp.code.length}")
@@ -25,12 +30,26 @@ public class OtpService {
     @Value("${otp.code.ttl-seconds}")
     private int ttlSeconds;
 
-    public OtpService(OtpCodeRepository otpCodeRepository) {
+    @Value("${otp.delivery.channel}")
+    private String deliveryChannel;
+
+    /**
+     * Constructs the OTP service with the required repositories and delivery service.
+     *
+     * @param otpCodeRepository  repository for OTP code storage
+     * @param otpDeliveryFactory factory responsible for delivering OTP codes
+     * @param userService        service for accessing user information
+     */
+
+
+    public OtpService(OtpCodeRepository otpCodeRepository, OtpDeliveryFactory otpDeliveryFactory, UserService userService) {
         this.otpCodeRepository = otpCodeRepository;
+        this.otpDeliveryFactory = otpDeliveryFactory;
+        this.userService = userService;
     }
 
     /**
-     * Generates an OTP code and saves it to the database.
+     * Generates an OTP code, saves it to the database, and sends it to the user.
      *
      * @param userId      the user ID
      * @param operationId the operation ID
@@ -39,7 +58,7 @@ public class OtpService {
         logger.info("Generating OTP code for userId={} and operationId={}", userId, operationId);
         if (otpCodeRepository.existsByUserIdAndOperationId(userId, operationId)) {
             logger.warn("OTP code already exists for userId={} and operationId={}", userId, operationId);
-            throw new IllegalStateException("OTP code already exists for this operation and user.");
+            throw new OtpCodeAlreadyExistsException("OTP code already exists for this operation and user.");
         }
 
         String code = generateRandomCode();
@@ -56,6 +75,18 @@ public class OtpService {
 
         otpCodeRepository.save(otpCode);
         logger.info("OTP code generated and saved successfully for userId={} and operationId={}", userId, operationId);
+
+        // Select delivery channel dynamically
+        DeliveryChannel channel = DeliveryChannel.valueOf(deliveryChannel.toUpperCase());
+        OtpDeliveryService deliveryService = otpDeliveryFactory.getService(channel);
+
+        // Lookup user's email by userId
+        String email = userService.getEmailByUserId(userId);
+        logger.info("Sending OTP code via {} to {}", channel, email);
+
+        // Send OTP
+        deliveryService.sendOtp(email, code);
+        logger.info("OTP code sent successfully for userId={} and operationId={}", userId, operationId);
     }
 
     /**

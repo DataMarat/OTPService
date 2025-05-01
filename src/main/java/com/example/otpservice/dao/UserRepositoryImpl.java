@@ -45,6 +45,13 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public Optional<User> findById(Long id) {
+        return jdbc.query("SELECT * FROM users WHERE id = ? LIMIT 1", userMapper, id)
+                .stream()
+                .findFirst();
+    }
+
+    @Override
     public void save(User user) {
         jdbc.update(
                 "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",

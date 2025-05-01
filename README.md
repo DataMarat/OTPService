@@ -61,6 +61,8 @@ src/
 │   │   │   ├── JwtFilter.java               # Фильтрация запросов по JWT
 │   │   │   └── JwtUtil.java                 # Генерация токенов
 │   │   └── service/                         # Бизнес-логика
+│   │   │   └── OtpExpirationService.java
+│   │   │   └── OtpService.java
 │   │   │   └── UserService.java
 │   │   └── OtpServiceApplication.java       # Точка входа
 │   └── resources/

@@ -58,6 +58,23 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles the case when an active OTP code already exists for the operation.
+     */
+    @ExceptionHandler(OtpCodeAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleOtpCodeAlreadyExists(OtpCodeAlreadyExistsException ex, HttpServletRequest request) {
+        logger.warn("Attempt to generate OTP when code already exists at {}: {}", request.getRequestURI(), ex.getMessage());
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", ZonedDateTime.now());
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("error", "Conflict");
+        body.put("message", ex.getMessage());
+        body.put("path", request.getRequestURI());
+
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
+    /**
      * Handles all uncaught exceptions.
      */
     @ExceptionHandler(Exception.class)

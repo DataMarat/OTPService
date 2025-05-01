@@ -97,4 +97,16 @@ public class UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email))
                 .getId();
     }
+
+    /**
+     * Finds a user's email by their ID.
+     *
+     * @param userId the user's ID
+     * @return the user's email
+     */
+    public String getEmailByUserId(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId))
+                .getEmail();
+    }
 }
