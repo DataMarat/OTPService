@@ -48,14 +48,15 @@ public class AuthController {
             @RequestBody @Valid RegistrationRequest request,
             HttpServletRequest httpRequest
     ) {
-        logger.info("[POST /register] Registration attempt: username='{}', email='{}', admin={}",
-                request.getUsername(), request.getEmail(), request.getAdmin());
+        logger.info("[POST /register] Registration attempt: username='{}', email='{}', phone='{}', admin={}",
+                request.getUsername(), request.getEmail(), request.getPhoneNumber(), request.getAdmin());
 
         try {
             userService.registerUser(
                     request.getUsername(),
                     request.getEmail(),
                     request.getPassword(),
+                    request.getPhoneNumber(),
                     request.getAdmin()
             );
             logger.info("User '{}' registered successfully", request.getUsername());

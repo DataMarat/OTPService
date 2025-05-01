@@ -31,7 +31,7 @@ public class UserService {
      * @param rawPassword plain text password
      * @param isAdmin     true if the user should be an admin
      */
-    public void registerUser(String username, String email, String rawPassword, boolean isAdmin) {
+    public void registerUser(String username, String email, String rawPassword, String phoneNumber, boolean isAdmin) {
         if (userRepository.findByUsername(username).isPresent()) {
             logger.warn("Registration failed: username '{}' already exists", username);
             throw new IllegalArgumentException("Username already exists");
@@ -53,6 +53,7 @@ public class UserService {
         User user = new User();
         user.setUsername(username);
         user.setEmail(email);
+        user.setPhoneNumber(phoneNumber);
         user.setPasswordHash(passwordHash);
         user.setRole(isAdmin ? User.Role.ADMIN : User.Role.USER);
 
@@ -108,5 +109,18 @@ public class UserService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId))
                 .getEmail();
+    }
+
+    /**
+     * Retrieves the phone number associated with the specified user's email.
+     *
+     * @param email the email address of the user
+     * @return the phone number of the user
+     * @throws UsernameNotFoundException if no user is found with the given email
+     */
+    public String getPhoneByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email))
+                .getPhoneNumber();
     }
 }

@@ -1,26 +1,27 @@
 package com.example.otpservice.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.smpp.Connection;
 import org.smpp.Session;
 import org.smpp.TCPIPConnection;
-import org.smpp.pdu.BindTransmitter;
+import org.smpp.TimeoutException;
+import org.smpp.WrongSessionStateException;
 import org.smpp.pdu.BindResponse;
+import org.smpp.pdu.BindTransmitter;
 import org.smpp.pdu.PDUException;
 import org.smpp.pdu.SubmitSM;
 import org.smpp.pdu.ValueNotSetException;
-import org.smpp.WrongSessionStateException;
-import org.smpp.TimeoutException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Service for sending OTP codes to users via SMPP emulator.
  */
 @Service
 public class SmsService implements OtpDeliveryService {
+    private static final Logger logger = LoggerFactory.getLogger(SmsService.class);
 
     @Value("${smpp.host}")
     private String host;
@@ -40,65 +41,71 @@ public class SmsService implements OtpDeliveryService {
     @Value("${smpp.source_addr}")
     private String sourceAddress;
 
+    private final UserService userService;
+
+    public SmsService(UserService userService) {
+        this.userService = userService;
+    }
     /**
-     * Sends an OTP code to a user via SMPP emulator.
+     * Sends an OTP code to the user's phone number using their email as identifier.
      *
-     * @param email the email address of the user (ignored for SMS)
+     * @param email the email address of the user
      * @param code  the OTP code to be sent
      */
     @Override
     public void sendOtp(String email, String code) {
+        String phoneNumber = userService.getPhoneByEmail(email);
+        String message = "Ваш OTP-код: " + code + ". Не сообщайте его никому.";
+
+        logger.info("Preparing to send OTP via SMS to phone {} for user '{}'", phoneNumber, email);
+        sendSms(phoneNumber, message);
+    }
+    /**
+     * Sends an SMS message to the specified phone number via SMPP.
+     *
+     * @param phoneNumber recipient's phone number
+     * @param message     message content
+     */
+    public void sendSms(String phoneNumber, String message) {
         Connection connection = null;
         Session session = null;
 
         try {
-            // Establish TCP/IP connection
             connection = new TCPIPConnection(host, port);
             session = new Session(connection);
 
-            // Bind to the SMPP server
             BindTransmitter bindRequest = new BindTransmitter();
             bindRequest.setSystemId(systemId);
             bindRequest.setPassword(password);
             bindRequest.setSystemType(systemType);
-            bindRequest.setInterfaceVersion((byte) 0x34); // SMPP v3.4
+            bindRequest.setInterfaceVersion((byte) 0x34);
             bindRequest.setAddressRange(sourceAddress);
 
+            logger.debug("Connecting to SMPP at {}:{}", host, port);
             BindResponse bindResponse = session.bind(bindRequest);
+
             if (bindResponse.getCommandStatus() != 0) {
                 throw new RuntimeException("SMPP Bind failed with status: " + bindResponse.getCommandStatus());
             }
 
-            // Prepare the SMS message
             SubmitSM submitSM = new SubmitSM();
             submitSM.setSourceAddr(sourceAddress);
+            submitSM.setDestAddr(phoneNumber);
+            submitSM.setShortMessage(message);
 
-            // In real system: lookup destination phone number by userId
-            submitSM.setDestAddr("1234567890");
-            submitSM.setShortMessage(Arrays.toString(("Your OTP code is: " + code).getBytes()));
-
-            // Send the SMS message
             session.submit(submitSM);
 
-        } catch (ValueNotSetException e) {
-            throw new RuntimeException("Required SMPP field is not set", e);
-        } catch (TimeoutException e) {
-            throw new RuntimeException("Timeout during SMPP communication", e);
-        } catch (PDUException e) {
-            throw new RuntimeException("PDU structure error in SMPP communication", e);
-        } catch (WrongSessionStateException e) {
-            throw new RuntimeException("Wrong session state for SMPP operation", e);
-        } catch (IOException e) {
-            throw new RuntimeException("I/O error during SMPP communication", e);
-        } catch (Exception e) {
-            throw new RuntimeException("Unexpected error during SMPP communication", e);
+        } catch (PDUException | TimeoutException | WrongSessionStateException | IOException e) {
+            logger.error("Failed to send SMS to {}: {}", phoneNumber, e.getMessage(), e);
+            throw new RuntimeException("SMPP sending failed: " + e.getMessage(), e);
         } finally {
             if (session != null) {
                 try {
                     session.unbind();
                     session.close();
-                } catch (Exception ignored) {
-                    // Ignore errors during session close
+                    logger.debug("SMPP session closed");
+                } catch (Exception e) {
+                    logger.warn("Error closing SMPP session: {}", e.getMessage());
                 }
             }
         }

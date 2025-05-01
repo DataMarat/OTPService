@@ -41,7 +41,7 @@ public class OtpController {
         logger.info("Received OTP generation request for userId={} and operationId={}", userId, request.getOperationId());
 
         otpService.generateOtp(userId, request.getOperationId());
-        logger.info("OTP code successfully generated for userId={} and operationId={}", userId, request.getOperationId());
+        logger.info("OTP code successfully processed for userId={} and operationId={}", userId, request.getOperationId());
 
         return ResponseEntity.status(201).build();
     }

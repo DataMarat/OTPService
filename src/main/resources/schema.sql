@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(100) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
+    phone_number VARCHAR(20) NOT NULL,
     password_hash TEXT NOT NULL,
     role VARCHAR(10) NOT NULL CHECK (role IN ('ADMIN', 'USER'))
 );

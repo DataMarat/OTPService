@@ -21,6 +21,7 @@ public class UserRepositoryImpl implements UserRepository {
         user.setId(rs.getLong("id"));
         user.setUsername(rs.getString("username"));
         user.setEmail(rs.getString("email"));
+        user.setPhoneNumber(rs.getString("phone_number"));
         user.setPasswordHash(rs.getString("password_hash"));
         user.setRole(User.Role.valueOf(rs.getString("role")));
         return user;
@@ -54,9 +55,10 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void save(User user) {
         jdbc.update(
-                "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
+                "INSERT INTO users (username, email, phone_number, password_hash, role) VALUES (?, ?, ?, ?, ?)",
                 user.getUsername(),
                 user.getEmail(),
+                user.getPhoneNumber(),
                 user.getPasswordHash(),
                 user.getRole().name()
         );

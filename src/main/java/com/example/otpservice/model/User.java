@@ -4,6 +4,7 @@ public class User {
     private Long id;
     private String username;
     private String email;
+    private String phoneNumber;
     private String passwordHash;
     private Role role;
 
@@ -47,6 +48,10 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public String getPhoneNumber() { return phoneNumber; }
+
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
 
     public String getPasswordHash() {
         return passwordHash;
