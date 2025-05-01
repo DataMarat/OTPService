@@ -68,4 +68,15 @@ public class UserRepositoryImpl implements UserRepository {
     public boolean adminExists() {
         return findByRole(User.Role.ADMIN).isPresent();
     }
+
+    @Override
+    public java.util.List<User> findAllNonAdmins() {
+        String sql = "SELECT * FROM users WHERE role != 'ADMIN'";
+        return jdbc.query(sql, userMapper);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        jdbc.update("DELETE FROM users WHERE id = ?", id);
+    }
 }

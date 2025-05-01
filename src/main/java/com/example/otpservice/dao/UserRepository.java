@@ -2,6 +2,7 @@ package com.example.otpservice.dao;
 
 import com.example.otpservice.model.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository {
@@ -11,4 +12,7 @@ public interface UserRepository {
     Optional<User> findById(Long id);
     void save(User user);
     boolean adminExists();
+
+    List<User> findAllNonAdmins();
+    void deleteById(Long id);
 }

@@ -17,4 +17,5 @@ public interface OtpCodeRepository {
 
     Optional<OtpCode> findActiveCode(Long userId, String operationId, String code);
     void updateStatus(Long id, OtpStatus status);
+    void deleteByUserId(Long userId);
 }

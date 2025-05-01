@@ -86,4 +86,9 @@ public class OtpCodeRepositoryImpl implements OtpCodeRepository {
             return otpCode;
         });
     }
+
+    @Override
+    public void deleteByUserId(Long userId) {
+        jdbcTemplate.update("DELETE FROM otp_codes WHERE user_id = ?", userId);
+    }
 }

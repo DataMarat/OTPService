@@ -42,30 +42,32 @@ public class JwtFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
-            try {
-                Claims claims = Jwts.parser()
-                        .setSigningKey(secret)
-                        .parseClaimsJws(token)
-                        .getBody();
+            if (!token.isEmpty()) {
+                try {
+                    Claims claims = Jwts.parser()
+                            .setSigningKey(secret)
+                            .parseClaimsJws(token)
+                            .getBody();
 
-                String email = claims.getSubject();
-                String role = claims.get("role", String.class);
+                    String email = claims.getSubject();
+                    String role = claims.get("role", String.class);
 
-                logger.debug("Authenticated token for user '{}', role='{}'", email, role);
+                    logger.debug("Authenticated token for user '{}', role='{}'", email, role);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                email,
-                                null,
-                                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
-                        );
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    email,
+                                    null,
+                                    Collections.singletonList(new SimpleGrantedAuthority(role))
+                            );
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            } catch (SignatureException | IllegalArgumentException e) {
-                logger.warn("Invalid JWT token: {}", e.getMessage());
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
-                return;
+                } catch (io.jsonwebtoken.JwtException e) {
+                    logger.warn("Invalid JWT token: {}", e.getMessage());
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired token");
+                    return;
+                }
             }
         }
 
