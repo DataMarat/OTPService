@@ -65,6 +65,21 @@ src/
 │   │   └── OtpServiceApplicationTests.java  # Тест запуска приложения
 ```
 
+## Запуск приложения
+
+Точка входа: `OtpServiceApplication.java`
+
+Запуск выполняется как стандартное Spring Boot-приложение:
+
+```bash
+mvn spring-boot:run
+```
+
+Или после сборки:
+```bash
+java -jar target/otp-service.jar
+```
+
 ## Работа с базой данных
 
 База данных реализована с помощью PostgreSQL 17, взаимодействие с БД реализовано через JDBC.
@@ -209,6 +224,25 @@ EXPIRED.
 ```bash
 cp src/main/resources/application.example.properties src/main/resources/application.properties
 ```
+## Конфигурационные файлы
+
+Основной файл конфигурации — `application.properties`. В нём задаются параметры запуска сервиса, подключения к базе данных, логирования, настройки JWT, параметры OTP и выбор канала доставки.
+
+Также используются отдельные вспомогательные конфигурационные файлы, импортируемые из основного:
+
+- `email.properties` — настройки SMTP-сервера (например, host, port, логин, пароль).
+- `sms.properties` — настройки SMPP (например, адрес, порт, системный идентификатор).
+- `telegram.properties` — настройки Telegram-бота (токен и chatId).
+
+В проекте предоставлены шаблоны этих файлов с расширением `.example.properties`. При настройке среды необходимо создать файлы без суффикса `.example`, указав в них актуальные значения параметров.
+
+Для подключения вспомогательных файлов используется параметр:
+
+```properties
+spring.config.import=classpath:email.properties,classpath:sms.properties,classpath:telegram.properties
+````
+Файл application.properties должен находиться в каталоге src/main/resources и содержать только актуальные значения, без комментариев и тестовых данных.
+
 
 ## REST API для администратора
 ### GET /admin/otp-config
