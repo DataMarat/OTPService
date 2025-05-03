@@ -1,6 +1,7 @@
 ### Sensitive data ###
 src/main/resources/application.properties
 src/main/resources/email.properties
+src/main/resources/sms.properties
 
 # Ignore build artifacts
 /target/
